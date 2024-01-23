@@ -10,7 +10,7 @@ const bot = new TelegramBot(token, { polling: true, filepath: false });
 function nop(msg, userChat) {
     // console.log('init method for chatId '+chatId);
 }
-function ask(msg, userChat) {
+function askNumber(msg, userChat) {
     const chatId = msg.chat.id;
 
     const num = Math.floor((Math.random() * 
@@ -22,12 +22,41 @@ function ask(msg, userChat) {
     // bot.sendMessage(chatId, `Asking you: ${num}?`);
     tts(num).then(res => {
         bot.sendVoice(chatId, res);
+    }).catch(err => {
+        console.log('TTS ERROR\n', err);
     });
 
-    userChat.action = check;
+    userChat.action = checkNum;
 
 }
-function check(msg, userChat) {
+function askDate(msg, userChat) {
+    const chatId = msg.chat.id;
+
+    // получаем физически корректную дату
+    const date = new Date(Math.floor((Math.random() * 3200 - 50 + 1) + 50),
+        Math.floor(Math.random() * 12),
+        Math.ceil(Math.random() * 31));
+    
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    const request = `${year}年${month}月${day}日`;
+    userChat.answer = `${year}.${month}.${day}`;
+
+    tts(request).then(res => {
+        bot.sendVoice(chatId, res);
+    }).catch(err => console.log('tts error', err));
+    userChat.action = checkDate;
+
+}
+function checkDate(msg, userChat) {
+    const chatId = msg.chat.id;
+
+    userChat.action = nop;
+    console.log(userChat.answer);
+}
+function checkNum(msg, userChat) {
     const chatId = msg.chat.id;
 
     if (Number(msg.text) === userChat.answer) {
@@ -77,10 +106,6 @@ function dispatch(msg, userChat) {
         bot.sendMessage(chatId, `Интервал теперь от ${userChat.interval[0]} до ${userChat.interval[1]}`);
         return;
     }
-
-    if (text === '/ask') {
-        userChat.action = ask;
-    }
     if (text === '/train') {
         userChat.train = true;
         bot.sendMessage(chatId, 'Режим тренировки: ВКЛ');
@@ -91,6 +116,18 @@ function dispatch(msg, userChat) {
         bot.sendMessage(chatId, 'Режим тренировки: ВЫКЛ');
         return;
     }
+    if (text === '/asknum') {
+        ask = askNumber;
+        userChat.action = ask;
+    }
+    if (text === '/askdate') {
+        ask = askDate;
+        userChat.action = ask;
+    }
+    if (text === '/ask') {
+        userChat.action = ask;
+    }
+
 
     userChat.action(msg, userChat);
 
@@ -102,6 +139,7 @@ function dispatch(msg, userChat) {
 }
 
 const chats = new Object();
+let ask = askNumber;
 
 bot.on('message', (msg) => {
     
@@ -117,8 +155,13 @@ bot.on('message', (msg) => {
         }
         userChat = chats[chatId];
     }
-
-    dispatch(msg, userChat);
+    try {
+        console.log('ON MSG TRY');
+        dispatch(msg, userChat);
+    } catch (error) {
+        console.log('ERROR');
+        console.error(error);
+    }
     
     // if (msg.text === '/start') {
     //     chats.add(chatId);
@@ -127,4 +170,7 @@ bot.on('message', (msg) => {
     //     bot.sendMessage(chatId, `Все говорят "${msg.text}", а ты купи слона!`);
     // }
 });
+bot.on('polling_error', (err) => {
+    console.log(err);
+})
 
