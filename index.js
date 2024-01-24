@@ -19,15 +19,16 @@ function askNumber(msg, userChat) {
 
     userChat.answer = num;
 
-    // bot.sendMessage(chatId, `Asking you: ${num}?`);
-    tts(num).then(res => {
-        bot.sendVoice(chatId, res);
-    }).catch(err => {
-        console.log('TTS ERROR\n', err);
-    });
+    // TMP
+    bot.sendMessage(chatId, num);
+
+    // tts(num).then(res => {
+    //     bot.sendVoice(chatId, res);
+    // }).catch(err => {
+    //     console.log('TTS ERROR\n', err);
+    // });
 
     userChat.action = checkNum;
-
 }
 function askDate(msg, userChat) {
     const chatId = msg.chat.id;
@@ -44,17 +45,36 @@ function askDate(msg, userChat) {
     const request = `${year}年${month}月${day}日`;
     userChat.answer = `${year}.${month}.${day}`;
 
-    tts(request).then(res => {
-        bot.sendVoice(chatId, res);
-    }).catch(err => console.log('tts error', err));
-    userChat.action = checkDate;
+    // TMP
+    bot.sendMessage(chatId, request);
 
+    // tts(request).then(res => {
+    //     bot.sendVoice(chatId, res);
+    // }).catch(err => console.log('tts error', err));
+
+    userChat.action = checkDate;
 }
 function checkDate(msg, userChat) {
     const chatId = msg.chat.id;
+    const userAnswer = String(msg.text)
+        .split('.')
+        .map(item => Number(item))
+        .join('.');
 
-    userChat.action = nop;
-    console.log(userChat.answer);
+    if (userAnswer === userChat.answer) {
+        bot.sendMessage(chatId, 'Правильно!').then(() => {
+            if (userChat.train) {
+                ask(msg, userChat);
+            } else {
+                userChat.action = nop;
+            }
+        });
+    } else {
+        bot.sendMessage(chatId, 'Нет...');
+    }
+
+    // userChat.action = nop;
+    console.log(`${userChat.answer} -- ${userAnswer}`);
 }
 function checkNum(msg, userChat) {
     const chatId = msg.chat.id;
@@ -70,9 +90,6 @@ function checkNum(msg, userChat) {
     } else {
         bot.sendMessage(chatId, 'Нет...');
     }
-
-    
-
 }
 
 
@@ -155,13 +172,8 @@ bot.on('message', (msg) => {
         }
         userChat = chats[chatId];
     }
-    try {
-        console.log('ON MSG TRY');
-        dispatch(msg, userChat);
-    } catch (error) {
-        console.log('ERROR');
-        console.error(error);
-    }
+
+    dispatch(msg, userChat);
     
     // if (msg.text === '/start') {
     //     chats.add(chatId);
