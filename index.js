@@ -14,8 +14,9 @@ function askNumber(msg, userChat) {
     const chatId = msg.chat.id;
 
     const num = Math.floor((Math.random() * 
-    (userChat.interval[1] - userChat.interval[0] + 1)) + 
-    userChat.interval[0]);
+        (userChat.interval[1] - userChat.interval[0] + 1)) + 
+        userChat.interval[0]
+    );
 
     userChat.answer = num;
 
@@ -53,6 +54,14 @@ function askDate(msg, userChat) {
     // }).catch(err => console.log('tts error', err));
 
     userChat.action = checkDate;
+}
+function ask(msg, userChat) {
+    if (userChat.ask === 'number') {
+        askNumber(msg, userChat);
+    }
+    if (userChat.ask === 'date') {
+        askDate(msg, userChat);
+    }
 }
 function checkDate(msg, userChat) {
     const chatId = msg.chat.id;
@@ -134,11 +143,11 @@ function dispatch(msg, userChat) {
         return;
     }
     if (text === '/asknum') {
-        ask = askNumber;
+        userChat.ask = 'number';
         userChat.action = ask;
     }
     if (text === '/askdate') {
-        ask = askDate;
+        userChat.ask = 'date';
         userChat.action = ask;
     }
     if (text === '/ask') {
@@ -156,7 +165,6 @@ function dispatch(msg, userChat) {
 }
 
 const chats = new Object();
-let ask = askNumber;
 
 bot.on('message', (msg) => {
     
@@ -166,6 +174,7 @@ bot.on('message', (msg) => {
     if (userChat === undefined) {
         chats[chatId] = {
             action: nop,
+            ask: 'number',
             answer: null,
             train: true,
             interval: [0, 9999],
