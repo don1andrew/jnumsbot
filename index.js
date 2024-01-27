@@ -72,11 +72,7 @@ function checkDate(msg, userChat) {
 
     if (userAnswer === userChat.answer) {
         bot.sendMessage(chatId, 'Правильно!').then(() => {
-            if (userChat.train) {
-                ask(msg, userChat);
-            } else {
-                userChat.action = nop;
-            }
+            ask(msg, userChat);
         });
     } else {
         bot.sendMessage(chatId, 'Нет...');
@@ -90,11 +86,7 @@ function checkNum(msg, userChat) {
 
     if (Number(msg.text) === userChat.answer) {
         bot.sendMessage(chatId, 'Правильно!').then(() => {
-            if (userChat.train) {
-                ask(msg, userChat);
-            } else {
-                userChat.action = nop;
-            }
+            ask(msg, userChat);
         });
     } else {
         bot.sendMessage(chatId, 'Нет...');
@@ -132,16 +124,6 @@ function dispatch(msg, userChat) {
         bot.sendMessage(chatId, `Интервал теперь от ${userChat.interval[0]} до ${userChat.interval[1]}`);
         return;
     }
-    if (text === '/train') {
-        userChat.train = true;
-        bot.sendMessage(chatId, 'Режим тренировки: ВКЛ');
-        return;
-    }
-    if (text === '/stop') {
-        userChat.train = false;
-        bot.sendMessage(chatId, 'Режим тренировки: ВЫКЛ');
-        return;
-    }
     if (text === '/asknum') {
         userChat.ask = 'number';
         userChat.action = ask;
@@ -153,6 +135,17 @@ function dispatch(msg, userChat) {
     if (text === '/ask') {
         userChat.action = ask;
     }
+    if (text === '/reveal') {
+        let answer = '';
+        if (userChat.answer === null) {
+            answer = 'Мы пока ничего не спросили :)';
+            userChat.action = nop;
+        } else {
+            answer = `Ответ: ${userChat.answer}`;
+            userChat.action = ask;
+        }
+        bot.sendMessage(chatId, answer);
+    }
 
     userChat.action(msg, userChat);
 }
@@ -160,7 +153,6 @@ function dispatch(msg, userChat) {
 const chats = new Object();
 
 bot.on('message', (msg) => {
-    
     const chatId = msg.chat.id;
 
     let userChat = chats[chatId];
@@ -169,7 +161,6 @@ bot.on('message', (msg) => {
             action: nop,
             ask: 'number',
             answer: null,
-            train: true,
             interval: [0, 9999],
         }
         userChat = chats[chatId];
