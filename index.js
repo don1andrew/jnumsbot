@@ -21,13 +21,13 @@ function askNumber(msg, userChat) {
     userChat.answer = num;
 
     // TMP
-    bot.sendMessage(chatId, num);
+    // bot.sendMessage(chatId, num);
 
-    // tts(num).then(res => {
-    //     bot.sendVoice(chatId, res);
-    // }).catch(err => {
-    //     console.log('TTS ERROR\n', err);
-    // });
+    tts(num).then(res => {
+        bot.sendVoice(chatId, res);
+    }).catch(err => {
+        console.log('TTS ERROR\n', err);
+    });
 
     userChat.action = checkNum;
 }
@@ -47,11 +47,11 @@ function askDate(msg, userChat) {
     userChat.answer = `${year}.${month}.${day}`;
 
     // TMP
-    bot.sendMessage(chatId, request);
+    // bot.sendMessage(chatId, request);
 
-    // tts(request).then(res => {
-    //     bot.sendVoice(chatId, res);
-    // }).catch(err => console.log('tts error', err));
+    tts(request).then(res => {
+        bot.sendVoice(chatId, res);
+    }).catch(err => console.log('tts error', err));
 
     userChat.action = checkDate;
 }
@@ -154,14 +154,7 @@ function dispatch(msg, userChat) {
         userChat.action = ask;
     }
 
-
     userChat.action(msg, userChat);
-
-    // if (Number.isInteger(Number(text))) {
-    //     tts(text).then(res => {
-    //         bot.sendVoice(chatId, res);
-    //     })
-    // }
 }
 
 const chats = new Object();
@@ -183,14 +176,8 @@ bot.on('message', (msg) => {
     }
 
     dispatch(msg, userChat);
-    
-    // if (msg.text === '/start') {
-    //     chats.add(chatId);
-    //     bot.sendMessage(chatId, `Купи слона!`)
-    // } else if (chats.has(chatId)) {
-    //     bot.sendMessage(chatId, `Все говорят "${msg.text}", а ты купи слона!`);
-    // }
 });
+
 bot.on('polling_error', (err) => {
     console.log(err);
 })
