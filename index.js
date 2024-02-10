@@ -34,8 +34,8 @@ function nop(msg, userChat) {
 function askNumber(msg, userChat) {
     const chatId = msg.chat.id;
 
-    const num = Math.floor((Math.random() * 
-        (userChat.interval[1] - userChat.interval[0] + 1)) + 
+    const num = Math.floor(
+        (Math.random() * (userChat.interval[1] - userChat.interval[0] + 1)) + 
         userChat.interval[0]
     );
 
@@ -56,9 +56,13 @@ function askDate(msg, userChat) {
     const chatId = msg.chat.id;
 
     // получаем физически корректную дату
-    const date = new Date(Math.floor((Math.random() * 3200 - 50 + 1) + 50),
-        Math.floor(Math.random() * 12),
-        Math.ceil(Math.random() * 31));
+    const date = new Date();
+    date.setFullYear(Math.floor(
+            (Math.random() * (userChat.yearinterval[1] - userChat.yearinterval[0] + 1)) +
+            userChat.yearinterval[0]
+        ));
+    date.setMonth(Math.floor(Math.random() * 12));
+    date.setDate(Math.ceil(Math.random() * 31));
     
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -140,9 +144,18 @@ function dispatch(msg, userChat) {
 
     const match = /^\/interval (\d+) (\d+)/.exec(text);
     if (match !== null) {
-        userChat.interval = (Number(match[1]) <= Number(match[2])) ? 
-        [Number(match[1]), Number(match[2])] : [Number(match[2]), Number(match[1])];
+        userChat.interval = (Number(match[1]) <= Number(match[2]))
+            ? [Number(match[1]), Number(match[2])]
+            : [Number(match[2]), Number(match[1])];
         bot.sendMessage(chatId, `Интервал теперь от ${userChat.interval[0]} до ${userChat.interval[1]}`);
+        return;
+    }
+    const matchYear = /^\/yearinterval (\d+) (\d+)/.exec(text);
+    if (matchYear !== null) {
+        userChat.yearinterval = (Number(matchYear[1]) <= Number(matchYear[2]))
+            ? [Number(matchYear[1]), Number(matchYear[2])]
+            : [Number(matchYear[2]), Number(matchYear[1])];
+        bot.sendMessage(chatId, `Интервал теперь от ${userChat.yearinterval[0]} до ${userChat.yearinterval[1]}`);
         return;
     }
     if (text === '/asknum') {
@@ -219,6 +232,7 @@ bot.on('message', (msg) => {
             ask: 'number',
             answer: null,
             interval: [0, 9999],
+            yearinterval: [50, 2400],
             dateoption: 'full_date',
             voice: 'ja-JP-Wavenet-B',
             speed: '1',
