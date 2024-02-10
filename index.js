@@ -1,3 +1,6 @@
+// disable deprecation warning about sending files API
+process.env.NTBA_FIX_350 = 0;
+
 // import TelegramBot from 'node-telegram-bot-api';
 const TelegramBot = require('node-telegram-bot-api');
 const tts = require('./tts.js');
