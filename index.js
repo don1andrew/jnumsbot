@@ -23,7 +23,7 @@ function askNumber(msg, userChat) {
     // TMP
     // bot.sendMessage(chatId, num);
 
-    tts(num).then(res => {
+    tts(num, userChat.voice, userChat.speed).then(res => {
         bot.sendVoice(chatId, res);
     }).catch(err => {
         console.log('TTS ERROR\n', err);
@@ -49,7 +49,7 @@ function askDate(msg, userChat) {
     // TMP
     // bot.sendMessage(chatId, request);
 
-    tts(request).then(res => {
+    tts(request, userChat.voice, userChat.speed).then(res => {
         bot.sendVoice(chatId, res);
     }).catch(err => console.log('tts error', err));
 
@@ -146,6 +146,30 @@ function dispatch(msg, userChat) {
         }
         bot.sendMessage(chatId, answer);
     }
+    if (text === '/voice') {
+        bot.sendMessage(chatId, 'Выберите голос:',
+        { "reply_markup": {
+            "inline_keyboard": [
+                [
+                    { "text": 'Мужской', "callback_data": 'ja-JP-Wavenet-C' },
+                    { "text": 'Женский', "callback_data": 'ja-JP-Wavenet-B' },
+                ],
+        ]}});
+        return;
+    }
+    if (text === '/speed') {
+        bot.sendMessage(chatId, 'Задайте скорость:',
+        { "reply_markup": { 
+            "inline_keyboard": [
+                [
+                    { "text": '0.5', "callback_data": '0.5' },
+                    { "text": '0.75', "callback_data": '0.75' },
+                    { "text": '1', "callback_data": '1' },
+                    { "text": '1.25', "callback_data": '1.25' },
+                ],
+        ]}});
+        return;
+    }
 
     userChat.action(msg, userChat);
 }
@@ -162,6 +186,8 @@ bot.on('message', (msg) => {
             ask: 'number',
             answer: null,
             interval: [0, 9999],
+            voice: 'ja-JP-Wavenet-B',
+            speed: '1',
         }
         userChat = chats[chatId];
     }
@@ -173,3 +199,22 @@ bot.on('polling_error', (err) => {
     console.log(err);
 })
 
+bot.on('callback_query', (callbackQuery) => {
+    const msg = callbackQuery.message;
+    userChat = chats[msg.chat.id];
+    // add switch if more callback types
+    if (callbackQuery.data === 'ja-JP-Wavenet-C' || callbackQuery === 'ja-JP-Wavenet-B') {
+        userChat.voice = callbackQuery.data;
+        bot.answerCallbackQuery(callbackQuery.id)
+            .then(() => bot.sendMessage(msg.chat.id,
+                `Голос теперь ${callbackQuery.data === 'ja-JP-Wavenet-C' ? 'мужской' : 'женский'}`));
+        return;
+    }
+    if (!isNaN(Number(callbackQuery.data))) {
+        userChat.speed = callbackQuery.data;
+        bot.answerCallbackQuery(callbackQuery.id)
+            .then(() => bot.sendMessage(msg.chat.id,
+                `Скорость теперь ${callbackQuery.data}`));
+        return;
+    }
+});
