@@ -8,6 +8,24 @@ const token = require('./credentials/bot-token');
 
 const helpMsg = require('./const-strings');
 
+const DATE_OPTION_PARAMS = {
+    full_date: {
+        name: 'Полная дата',
+        getRequestString: (year, month, day) => `${year}年${month}月${day}日`,
+        getAnswerString: (year, month, day) => `${year}.${month}.${day}`,
+    },
+    month_date: {
+        name: 'Месяц и число',
+        getRequestString: (year, month, day) => `${month}月${day}日`,
+        getAnswerString: (year, month, day) => `${month}.${day}`,
+    },
+    date: {
+        name: 'Число',
+        getRequestString: (year, month, day) => `${day}日`,
+        getAnswerString: (year, month, day) => `${day}`,
+    },
+}
+
 const bot = new TelegramBot(token, { polling: true, filepath: false });
 
 function nop(msg, userChat) {
@@ -46,8 +64,8 @@ function askDate(msg, userChat) {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     
-    const request = `${year}年${month}月${day}日`;
-    userChat.answer = `${year}.${month}.${day}`;
+    const request = DATE_OPTION_PARAMS[userChat.dateoption].getRequestString(year, month, day);
+    userChat.answer = DATE_OPTION_PARAMS[userChat.dateoption].getAnswerString(year, month, day);
 
     // TMP
     // bot.sendMessage(chatId, request);
@@ -149,6 +167,18 @@ function dispatch(msg, userChat) {
         }
         bot.sendMessage(chatId, answer);
     }
+    if (text === '/dateoption') {
+        bot.sendMessage(chatId, 'Выберите способ:',
+        { "reply_markup": {
+            "inline_keyboard": [
+                [
+                    { "text": 'Полная дата', "callback_data": 'full_date' },
+                    { "text": 'Месяц и число', "callback_data": 'month_date' },
+                    { "text": 'Число', "callback_data": 'date' },
+                ],
+        ]}});
+        return;
+    }
     if (text === '/voice') {
         bot.sendMessage(chatId, 'Выберите голос:',
         { "reply_markup": {
@@ -189,6 +219,7 @@ bot.on('message', (msg) => {
             ask: 'number',
             answer: null,
             interval: [0, 9999],
+            dateoption: 'full_date',
             voice: 'ja-JP-Wavenet-B',
             speed: '1',
         }
@@ -206,6 +237,16 @@ bot.on('callback_query', (callbackQuery) => {
     const msg = callbackQuery.message;
     userChat = chats[msg.chat.id];
     // add switch if more callback types
+    if (callbackQuery.data === 'full_date' ||
+        callbackQuery.data === 'month_date' ||
+        callbackQuery.data === 'date'
+    ) {
+        userChat.dateoption = callbackQuery.data;
+        bot.answerCallbackQuery(callbackQuery.id)
+            .then(() => bot.sendMessage(msg.chat.id,
+                'Будет спрашиваться ' + DATE_OPTION_PARAMS[userChat.dateoption].name.toLowerCase()));
+        return;
+    }
     if (callbackQuery.data === 'ja-JP-Wavenet-C' || callbackQuery === 'ja-JP-Wavenet-B') {
         userChat.voice = callbackQuery.data;
         bot.answerCallbackQuery(callbackQuery.id)
