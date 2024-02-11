@@ -7,6 +7,7 @@ const tts = require('./tts.js');
 const token = require('./credentials/bot-token');
 
 const helpMsg = require('./const-strings');
+const keys = require('./inline-keyboards.js');
 
 const DATE_OPTION_PARAMS = {
     full_date: {
@@ -102,9 +103,6 @@ function checkDate(msg, userChat) {
     } else {
         bot.sendMessage(chatId, 'Нет...');
     }
-
-    // userChat.action = nop;
-    console.log(`${userChat.answer} -- ${userAnswer}`);
 }
 function checkNum(msg, userChat) {
     const chatId = msg.chat.id;
@@ -181,39 +179,27 @@ function dispatch(msg, userChat) {
         bot.sendMessage(chatId, answer);
     }
     if (text === '/dateoption') {
-        bot.sendMessage(chatId, 'Выберите способ:',
-        { "reply_markup": {
-            "inline_keyboard": [
-                [
-                    { "text": 'Полная дата', "callback_data": 'full_date' },
-                    { "text": 'Месяц и число', "callback_data": 'month_date' },
-                    { "text": 'Число', "callback_data": 'date' },
-                ],
-        ]}});
+        bot.sendMessage(
+            chatId,
+            'Выберите способ:',
+            { reply_markup: keys.getDateKeys(userChat.dateoption) }
+        );
         return;
     }
     if (text === '/voice') {
-        bot.sendMessage(chatId, 'Выберите голос:',
-        { "reply_markup": {
-            "inline_keyboard": [
-                [
-                    { "text": 'Мужской', "callback_data": 'ja-JP-Wavenet-C' },
-                    { "text": 'Женский', "callback_data": 'ja-JP-Wavenet-B' },
-                ],
-        ]}});
+        bot.sendMessage(
+            chatId,
+            'Выберите голос:',
+            { reply_markup: keys.getVoiceKeys(userChat.voice) }
+        );
         return;
     }
     if (text === '/speed') {
-        bot.sendMessage(chatId, 'Задайте скорость:',
-        { "reply_markup": { 
-            "inline_keyboard": [
-                [
-                    { "text": '0.5', "callback_data": '0.5' },
-                    { "text": '0.75', "callback_data": '0.75' },
-                    { "text": '1', "callback_data": '1' },
-                    { "text": '1.25', "callback_data": '1.25' },
-                ],
-        ]}});
+        bot.sendMessage(
+            chatId, 
+            'Задайте скорость:',
+            { reply_markup: keys.getSpeedKeys(userChat.speed) }
+        );
         return;
     }
 
@@ -256,23 +242,46 @@ bot.on('callback_query', (callbackQuery) => {
         callbackQuery.data === 'date'
     ) {
         userChat.dateoption = callbackQuery.data;
-        bot.answerCallbackQuery(callbackQuery.id)
-            .then(() => bot.sendMessage(msg.chat.id,
-                'Будет спрашиваться ' + DATE_OPTION_PARAMS[userChat.dateoption].name.toLowerCase()));
+        bot.editMessageReplyMarkup(
+            keys.getDateKeys(userChat.dateoption),
+            { chat_id: msg.chat.id, message_id: msg.message_id }
+        )
+        .catch(err => {
+            console.error('Editing menu error:\n', err.message);
+        })
+        .finally(() => {
+            bot.answerCallbackQuery(callbackQuery.id);
+        })
         return;
     }
-    if (callbackQuery.data === 'ja-JP-Wavenet-C' || callbackQuery === 'ja-JP-Wavenet-B') {
+    if (callbackQuery.data === 'ja-JP-Wavenet-C' ||
+        callbackQuery.data === 'ja-JP-Wavenet-B'
+    ) {
         userChat.voice = callbackQuery.data;
-        bot.answerCallbackQuery(callbackQuery.id)
-            .then(() => bot.sendMessage(msg.chat.id,
-                `Голос теперь ${callbackQuery.data === 'ja-JP-Wavenet-C' ? 'мужской' : 'женский'}`));
+        bot.editMessageReplyMarkup(
+            keys.getVoiceKeys(userChat.voice),
+            { chat_id: msg.chat.id, message_id: msg.message_id }
+        )
+        .catch(err => {
+            console.error('Editing menu error:\n', err.message);
+        })
+        .finally(() => {
+            bot.answerCallbackQuery(callbackQuery.id);
+        })
         return;
     }
     if (!isNaN(Number(callbackQuery.data))) {
         userChat.speed = callbackQuery.data;
-        bot.answerCallbackQuery(callbackQuery.id)
-            .then(() => bot.sendMessage(msg.chat.id,
-                `Скорость теперь ${callbackQuery.data}`));
+        bot.editMessageReplyMarkup(
+            keys.getSpeedKeys(userChat.speed),
+            { chat_id: msg.chat.id, message_id: msg.message_id }
+        )
+        .catch(err => {
+            console.error('Editing menu error:\n', err.message);
+        })
+        .finally(() => {
+            bot.answerCallbackQuery(callbackQuery.id);
+        })
         return;
     }
 });
