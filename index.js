@@ -131,7 +131,7 @@ function dispatch(msg, userChat) {
     }
 
     if (text === '/help' || text === '/start') {
-        bot.sendMessage(chatId, helpMsg);
+        bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
         return;
     }
 
@@ -140,20 +140,37 @@ function dispatch(msg, userChat) {
         return;
     }
 
-    const match = /^\/interval (\d+) (\d+)/.exec(text);
-    if (match !== null) {
-        userChat.interval = (Number(match[1]) <= Number(match[2]))
-            ? [Number(match[1]), Number(match[2])]
-            : [Number(match[2]), Number(match[1])];
-        bot.sendMessage(chatId, `Интервал теперь от ${userChat.interval[0]} до ${userChat.interval[1]}`);
+    if (String(text).startsWith('/interval')) {
+        const match = /^\/interval (\d+) (\d+)/.exec(text);
+        if (match !== null) {
+            userChat.interval = (Number(match[1]) <= Number(match[2]))
+                ? [Number(match[1]), Number(match[2])]
+                : [Number(match[2]), Number(match[1])];
+            bot.sendMessage(chatId, `Интервал теперь от ${userChat.interval[0]} до ${userChat.interval[1]}`);
+            return;
+        }
+        bot.sendMessage(
+            chatId,
+            'Чтобы задать интервал, нужно указать через пробел значения после команды, например:\n\`/interval 10 999\`',
+            { parse_mode: 'MarkdownV2' }
+        );
         return;
     }
-    const matchYear = /^\/yearinterval (\d+) (\d+)/.exec(text);
-    if (matchYear !== null) {
-        userChat.yearinterval = (Number(matchYear[1]) <= Number(matchYear[2]))
-            ? [Number(matchYear[1]), Number(matchYear[2])]
-            : [Number(matchYear[2]), Number(matchYear[1])];
-        bot.sendMessage(chatId, `Интервал теперь от ${userChat.yearinterval[0]} до ${userChat.yearinterval[1]}`);
+
+    if (String(text).startsWith('/yearinterval')) {
+        const matchYear = /^\/yearinterval (\d+) (\d+)/.exec(text);
+        if (matchYear !== null) {
+            userChat.yearinterval = (Number(matchYear[1]) <= Number(matchYear[2]))
+                ? [Number(matchYear[1]), Number(matchYear[2])]
+                : [Number(matchYear[2]), Number(matchYear[1])];
+            bot.sendMessage(chatId, `Интервал теперь от ${userChat.yearinterval[0]} до ${userChat.yearinterval[1]}`);
+            return;
+        }
+        bot.sendMessage(
+            chatId,
+            'Чтобы задать интервал, нужно указать через пробел значения после команды, например:\n\`/yearinterval 1900 2025\`',
+            { parse_mode: 'MarkdownV2' }
+        );
         return;
     }
     if (text === '/asknum') {
