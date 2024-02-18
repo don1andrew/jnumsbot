@@ -10,7 +10,7 @@
   "author": "Andrey Zinchenko",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/text-to-speech": "^3.3.1",
-    "node-telegram-bot-api": "^0.54.0"
+    "@google-cloud/text-to-speech": "^5.0.2",
+    "node-telegram-bot-api": "^0.64.0"
   }
 }
