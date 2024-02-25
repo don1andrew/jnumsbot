@@ -3,7 +3,7 @@ process.env.NTBA_FIX_350 = 0;
 
 // import TelegramBot from 'node-telegram-bot-api';
 const TelegramBot = require('node-telegram-bot-api');
-const tts = require('./tts.js');
+const tts = require('./tts');
 const token = require('./credentials/bot-token');
 
 const helpMsg = require('./const-strings');
@@ -45,7 +45,11 @@ function askNumber(msg, userChat) {
     // TMP
     // bot.sendMessage(chatId, num);
 
+    let t1, t2;
+    t1 = performance.now();
     tts(num, userChat.voice, userChat.speed).then(res => {
+        t2 = performance.now();
+        console.log(`tts perfomance: ${t2 -t1} ms`);
         bot.sendVoice(chatId, res);
     }).catch(err => {
         console.log('TTS ERROR\n', err);
@@ -247,7 +251,7 @@ bot.on('message', (msg) => {
 });
 
 bot.on('polling_error', (err) => {
-    console.log(err);
+    console.log('Polling error:\n', err.message);
 })
 
 bot.on('callback_query', (callbackQuery) => {
