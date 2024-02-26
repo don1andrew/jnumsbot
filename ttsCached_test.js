@@ -7,7 +7,7 @@ const mcache = new Cache({
     stdTTL: 0,
     checkperiod: 0,
     useClones: false,
-    maxSize: 0
+    maxSize: 8000000
 });
 
 function getKey(text) {
@@ -78,7 +78,7 @@ console.log(`fill perfomance: ${
     (f2 - f1) / (iS+iM+iB+idD+idY+idMD)} ms of ${iS+iM+iB+idD+idY+idMD} elems`
 );
 console.log(`cache size: ${Math.round(mcache.getStats().vsize / 100) / 10}KB`);
-mcache.maxSize = mcache.getStats().vsize - 1;
+// mcache.maxSize = mcache.getStats().vsize - 1;
 
 let t1, t2;
 t1 = performance.now();

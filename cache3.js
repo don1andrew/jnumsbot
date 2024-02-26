@@ -24,6 +24,10 @@ class ChunkedSet {
     }
 }
 
+function getSize(cache) {
+    const stats = cache.getStats();
+    return stats.vsize + stats.ksize * 2;
+}
 
 class Cache extends NodeCache {
     constructor(options) {
@@ -34,8 +38,7 @@ class Cache extends NodeCache {
         this.on('set', (key) => {
             this.keyChunks.add(key);
 
-            // if (maxSize === 0) return;
-            let vsize = this.getStats().vsize;
+            let vsize = getSize(this);
             // console.log(`CACHE SET: ${key}`);
             // console.log(`CACHE size: ${Math.round(vsize / 100) / 10}KB`);
         
@@ -47,11 +50,11 @@ class Cache extends NodeCache {
             do {
                 delKey = this.keyChunks.pick();
                 this.del(delKey);
-        
-                vsize = this.getStats().vsize;
+                
+                vsize =  getSize(this);
+                // console.log(`DELETED: ${delKey}, CACHE NEW SIZE: ${Math.round(vsize / 100) / 10}KB`);
             } while (vsize > this.maxSize && delKey);
 
-                // console.log(`DELETED: ${delKey}, MCACHE NEW SIZE: ${Math.round(vsize / 100) / 10}KB, ${this.keysOrdered.length} ELEMS`);
         })
     }
 }
