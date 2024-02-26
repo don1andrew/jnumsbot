@@ -7,17 +7,11 @@ class Cache extends NodeCache {
         this.maxSize = options?.maxSize ?? 0;
 
         this.on('set', (key) => {
-            // let t1, t2;
-            // t1 = performance.now();
-
-            // if (maxSize === 0) return;
             let vsize = this.getStats().vsize;
             // console.log(`CACHE SET: ${key}`);
             // console.log(`CACHE size: ${Math.round(vsize / 100) / 10}KB`);
         
             if (vsize <= this.maxSize || this.maxSize === 0) {
-                // t2 = performance.now();
-                // console.log(`set perfomance: ${t2 - t1} ms`);
                 return;
             };
             
@@ -28,7 +22,6 @@ class Cache extends NodeCache {
                     return d > 0 ? -1 : d === 0 ? 0 : 1;
                 });
             while (vsize > this.maxSize && keys.length > 0) {
-                // const idx = Math.floor(Math.random() * keys.length);
                 const delKey = keys[0];
                 this.del(delKey);
                 keys.splice(0, 1);

@@ -1,13 +1,7 @@
-const tts =require('./tts');
-const NodeCache =require('node-cache');
-const Cache = require('./cache2');
+const { performance } = require('perf_hooks');
 
-const CACHE_SIZE = 200;
-const cache = new NodeCache({
-    stdTTL: 0,
-    checkperiod: 0,
-    useClones: false,
-})
+const tts = require('./tts');
+const Cache = require('./cache3');
 
 const mcache = new Cache({
     stdTTL: 0,
@@ -16,43 +10,6 @@ const mcache = new Cache({
     maxSize: 0
 });
 
-cache.on('set', (key) => {
-    let t1, t2;
-    t1 = performance.now();
-    let vsize = cache.getStats().vsize;
-    t2 = performance.now();
-    console.log(`get vsize perfomance: ${t2 - t1} ms`);
-    console.log(`CACHE SET: ${key}`);
-    console.log(`cache size: ${Math.round(vsize / 100) / 10}KB`);
-
-    if (vsize <= CACHE_SIZE) {
-        return;
-    }
-    
-    const keys = cache.keys().filter(k => k !== key);
-    while (vsize > CACHE_SIZE && keys.length > 0) {
-        const idx = Math.floor(Math.random() * keys.length);
-        const delKey = keys[idx];
-        cache.del(delKey);
-        keys.splice(idx, 1);
-
-        vsize = cache.getStats().vsize;
-
-        console.log(`DELETED: ${delKey}, CACHE NEW SIZE: ${Math.round(vsize / 100) / 10}KB`);
-    }
-})
-
-
-async function ttsCached(text, voice, speed) {
-    const key = `${voice}-${speed}-${text}`;
-    if (cache.has(key)) {
-        console.log(`CACHE HIT: ${key}`);
-        return cache.get(key);
-    }
-    const res = await tts(text, voice, speed);
-    cache.set(key, res);
-    return res;
-}
 function getKey(text) {
     return `ja-JP-Wavenet-B-1-${text}`;
 }

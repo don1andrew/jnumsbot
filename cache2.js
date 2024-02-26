@@ -1,8 +1,5 @@
 const NodeCache = require('node-cache');
 
-function addOrdered(array, value) {
-
-}
 function binFindIndex (arr, x) {
     let start = 0, end = arr.length - 1;
  
@@ -71,14 +68,22 @@ class Cache extends NodeCache {
                 return;
             };
             
-            while (vsize > this.maxSize && this.keysOrdered.length > 0) {
-                const delKey = this.keyChunks.pick();
+            let delKey = void 0;
+            do {
+                delKey = this.keyChunks.pick();
                 this.del(delKey);
         
                 vsize = this.getStats().vsize;
+            } while (vsize > this.maxSize && delKey);
+
+            // while (vsize > this.maxSize && this.keysOrdered.length > 0) {
+            //     const delKey = this.keyChunks.pick();
+            //     this.del(delKey);
         
-                // console.log(`DELETED: ${delKey}, MCACHE NEW SIZE: ${Math.round(vsize / 100) / 10}KB, ${this.keysOrdered.length} ELEMS`);
-            }
+            //     vsize = this.getStats().vsize;
+        
+            //     // console.log(`DELETED: ${delKey}, MCACHE NEW SIZE: ${Math.round(vsize / 100) / 10}KB, ${this.keysOrdered.length} ELEMS`);
+            // }
         })
     }
 }

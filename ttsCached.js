@@ -1,5 +1,5 @@
-const tts =require('./tts');
-const NodeCache =require('node-cache');
+const tts = require('./tts');
+const NodeCache = require('node-cache');
 
 const CACHE_SIZE = 50000;
 const cache = new NodeCache({
@@ -36,7 +36,7 @@ cache.on('set', (key) => {
 
 
 async function ttsCached(text, voice, speed) {
-    const key = `${voice}-${speed}-${text}`;
+    const key = `${voice}_${`${speed}`.padEnd(5, '0')}_${text.endsWith('日') ? '' : '---'}${text}`;
     if (cache.has(key)) {
         console.log(`CACHE HIT: ${key}`);
         return cache.get(key);
