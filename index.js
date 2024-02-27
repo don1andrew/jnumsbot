@@ -3,7 +3,7 @@ process.env.NTBA_FIX_350 = 0;
 
 // import TelegramBot from 'node-telegram-bot-api';
 const TelegramBot = require('node-telegram-bot-api');
-const tts = require('./tts.js');
+const tts = require('./ttsCached');
 const token = require('./credentials/bot-token');
 
 const helpMsg = require('./const-strings');
@@ -48,7 +48,7 @@ function askNumber(msg, userChat) {
     tts(num, userChat.voice, userChat.speed).then(res => {
         bot.sendVoice(chatId, res);
     }).catch(err => {
-        console.log('TTS ERROR\n', err);
+        console.error('TTS error: ', err.message);
     });
 
     userChat.action = checkNum;
@@ -77,7 +77,9 @@ function askDate(msg, userChat) {
 
     tts(request, userChat.voice, userChat.speed).then(res => {
         bot.sendVoice(chatId, res);
-    }).catch(err => console.log('tts error', err));
+    }).catch(err => {
+        console.error('TTS error: ', err.message);
+    });
 
     userChat.action = checkDate;
 }
@@ -247,7 +249,7 @@ bot.on('message', (msg) => {
 });
 
 bot.on('polling_error', (err) => {
-    console.log(err);
+    console.error('Polling error: ', err.message);
 })
 
 bot.on('callback_query', (callbackQuery) => {
@@ -264,7 +266,7 @@ bot.on('callback_query', (callbackQuery) => {
             { chat_id: msg.chat.id, message_id: msg.message_id }
         )
         .catch(err => {
-            console.error('Editing menu error:\n', err.message);
+            console.error('Editing menu error: ', err.message);
         })
         .finally(() => {
             bot.answerCallbackQuery(callbackQuery.id);
@@ -280,7 +282,7 @@ bot.on('callback_query', (callbackQuery) => {
             { chat_id: msg.chat.id, message_id: msg.message_id }
         )
         .catch(err => {
-            console.error('Editing menu error:\n', err.message);
+            console.error('Editing menu error: ', err.message);
         })
         .finally(() => {
             bot.answerCallbackQuery(callbackQuery.id);
@@ -294,7 +296,7 @@ bot.on('callback_query', (callbackQuery) => {
             { chat_id: msg.chat.id, message_id: msg.message_id }
         )
         .catch(err => {
-            console.error('Editing menu error:\n', err.message);
+            console.error('Editing menu error: ', err.message);
         })
         .finally(() => {
             bot.answerCallbackQuery(callbackQuery.id);

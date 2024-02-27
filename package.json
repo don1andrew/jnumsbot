@@ -1,6 +1,6 @@
 {
   "name": "jnumsbot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Telegram bot for training listening japanese numbers.",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/text-to-speech": "^5.0.2",
-    "node-telegram-bot-api": "^0.64.0"
+    "node-telegram-bot-api": "^0.64.0",
+    "node-cache": "^5.1.2"
   }
 }
